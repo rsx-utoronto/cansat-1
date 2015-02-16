@@ -1,23 +1,29 @@
+'''
+Ground Station Framework (Rover and CanSat Projects)
+Robotics for Space Exploration, University of Toronto (Canada)
+University of Toronto Institute for Aerospace Studies (UTIAS)
+Made by: Rahul Goel - rahul.g.eng@gmail.com
+
+Install the necessary modules in the following order (if running into problems, uninstall and reinstall in this order for correct build):
+
+sudo apt-get install tk tk-dev
+pip install matplotlib
+
+'''
+
 import Tkinter as tk
+from Tkinter import *
 import ttk, user, sys, time, serial
 from subprocess import check_output
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.figure import Figure
 
-class Root(tk.Tk):
-    
-    def __init__(self, *args, **kwargs):
-        tk.Tk.__init__(self, *args, **kwargs)
-        
-        #initialize menu
-        self.config(menu=MenuBar(self))
+root = tk.Tk()
 
-        self.geometry("1000x600+200+50")
+def key(event):
+    root.status.set(repr(event.char)) 
 
-        self.appFrame = tk.Frame(self)
-        self.appFrame.pack(side='top', fill='both', expand='True')
-        
-        self.status = StatusBar(self)
-        self.status.pack(side='bottom', fill='x')
-        
 class MenuBar(tk.Menu):
     def __init__(self, parent):
         tk.Menu.__init__(self, parent)
@@ -31,16 +37,16 @@ class MenuBar(tk.Menu):
         filemenu.add_command(label="Exit", underline=1, command=self.quit)
 
         filemenu = tk.Menu(self, tearoff=False)
-        self.add_cascade(label="Telemetry",underline=0, menu=filemenu)
-        filemenu.add_command(label="Connect", command=self.callback)
-        filemenu.add_command(label="Disconnect", command=self.callback)
-        filemenu.add_separator()
+        self.add_cascade(label="Establish Connection",underline=0, menu=filemenu)
 
         found_port = False
         for port in check_output(["ls", "/dev"]).split("\n"):
             if port.find("USB") != -1:
                 found_port = True
                 filemenu.add_command(label=port, command=self.callback)
+
+        filemenu.add_separator()
+        filemenu.add_command(label="Disconnect", command=self.callback)
 
         if not found_port:
             filemenu.add_command(label="No COM Device Found")
@@ -61,6 +67,7 @@ class StatusBar(ttk.Frame):
         ttk.Frame.__init__(self, master)
         self.label = ttk.Label(self, relief='sunken', anchor='w')
         self.label.pack(fill='x')
+        self.set("Waiting to connect")
 
     def set(self, format, *args):
         self.label.config(text=format % args)
@@ -70,21 +77,51 @@ class StatusBar(ttk.Frame):
         self.label.config(text="")
         self.label.update_idletasks()
 
-            
-class Application(ttk.Notebook):
-    def __init__(self, root):
-        ttk.Notebook.__init__(self, root)
-        
-        tab1 = ttk.Frame(self)
-        tab2 = ttk.Frame(self)
-        
-        self.add(tab1, text = "Main GUI")
-        self.add(tab2, text = "Raw Data")
-
 def test():
-    for i in range(0,10):
-        root.status.set(str(i))
 
-root = Root()
-root.after(2000, test)
+    f = Figure(figsize=(3,3), facecolor = "white")
+    dataPlot = FigureCanvasTkAgg(f, master = chart1_frame)
+    data = [1]
+
+    for i in range(0, 5):
+        f.clf()
+        a = f.add_subplot(111)
+        data.append(i)
+        a.plot(data)
+
+        a.set_title("sfw")
+        dataPlot.show()
+        dataPlot.get_tk_widget().pack()
+
+        time.sleep(1)
+
+root.config(menu=MenuBar(root))
+root.geometry("1000x600+200+50")
+root.title("RSX CanSat Control Center Version 1.0")
+root.configure(background='white')
+
+label_top = Label(root, text = "Hello world!", bg = "white")
+label_top.pack(side = "top", pady = 20)
+
+frame = Frame(root, bg = "white", padx = 10, pady = 10)
+frame.pack(side='top', fill='both', expand='True')
+frame.bind("<Key>", key)
+frame.focus_set()
+
+root.status = StatusBar(root)
+root.status.pack(side='bottom', fill='x')
+
+chart_width = frame.winfo_width() / 4
+chart_height = frame.winfo_height() / 2
+
+chart1_frame = Frame(frame, bg = "white", width = chart_width, height = chart_height)
+chart1_frame.grid(column = 0, row = 0)
+chart2_frame = Frame(frame, bg = "white", width = chart_width, height = chart_height)
+chart2_frame.grid(column = 1, row = 0)
+chart3_frame = Frame(frame, bg = "white", width = chart_width, height = chart_height)
+chart3_frame.grid(column = 2, row = 0)
+chart4_frame = Frame(frame, bg = "white", width = chart_width, height = chart_height)
+chart4_frame.grid(column = 3, row = 0)
+
+root.after(0, test)
 root.mainloop()
