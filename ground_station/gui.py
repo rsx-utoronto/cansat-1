@@ -1,8 +1,6 @@
 import Tkinter as tk
-import ttk
-import user
-import sys
-import time
+import ttk, user, sys, time, serial
+from subprocess import check_output
 
 class Root(tk.Tk):
     
@@ -37,8 +35,15 @@ class MenuBar(tk.Menu):
         filemenu.add_command(label="Connect", command=self.callback)
         filemenu.add_command(label="Disconnect", command=self.callback)
         filemenu.add_separator()
-        filemenu.add_command(label="USBTTY0", command=self.callback)
-        filemenu.add_command(label="USBTTY1", command=self.callback)
+
+        found_port = False
+        for port in check_output(["ls", "/dev"]).split("\n"):
+            if port.find("USB") != -1:
+                found_port = True
+                filemenu.add_command(label=port, command=self.callback)
+
+        if not found_port:
+            filemenu.add_command(label="No COM Device Found")
 
         helpmenu = tk.Menu(self, tearoff=False)
         self.add_cascade(label="Help", menu=helpmenu)
