@@ -1,34 +1,22 @@
-import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
+import numpy as np
 
-def update_line(num, data, line):
-    line.set_data(data[...,:num])
-    return line,
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+x, y = np.random.rand(2, 100) * 4
+hist, xedges, yedges = np.histogram2d(x, y, bins=4)
 
-fig1 = plt.figure()
+elements = (len(xedges) - 1) * (len(yedges) - 1)
+xpos, ypos = np.meshgrid(xedges[:-1]+0.25, yedges[:-1]+0.25)
 
-data = np.random.rand(2, 25)
-l, = plt.plot([], [], 'r-')
-plt.xlim(0, 1)
-plt.ylim(0, 1)
-plt.xlabel('x')
-plt.title('test')
-line_ani = animation.FuncAnimation(fig1, update_line, 25, fargs=(data, l),
-    interval=50, blit=True)
-#line_ani.save('lines.mp4')
+xpos = xpos.flatten()
+ypos = ypos.flatten()
+zpos = np.zeros(elements)
+dx = 0.5 * np.ones_like(zpos)
+dy = dx.copy()
+dz = hist.flatten()
 
-fig2 = plt.figure()
-
-x = np.arange(-9, 10)
-y = np.arange(-9, 10).reshape(-1, 1)
-base = np.hypot(x, y)
-ims = []
-for add in np.arange(15):
-    ims.append((plt.pcolor(x, y, base + add, norm=plt.Normalize(0, 30)),))
-
-im_ani = animation.ArtistAnimation(fig2, ims, interval=50, repeat_delay=3000,
-    blit=True)
-#im_ani.save('im.mp4', metadata={'artist':'Guido'})
+ax.bar3d(xpos, ypos, zpos, dx, dy, dz, color='b', zsort='average')
 
 plt.show()

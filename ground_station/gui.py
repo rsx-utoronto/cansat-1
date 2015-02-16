@@ -13,7 +13,7 @@ pip install matplotlib
 
 import Tkinter as tk
 from Tkinter import *
-import ttk, user, sys, time, serial, datetime
+import ttk, user, sys, time, serial, datetime, thread
 from subprocess import check_output
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
@@ -30,6 +30,8 @@ class MenuBar(tk.Menu):
 
         filemenu = tk.Menu(self, tearoff=False)
         self.add_cascade(label="File",underline=0, menu=filemenu)
+        filemenu.add_command(label="Save Data (.csv)", command=self.callback)
+        filemenu.add_separator()
         filemenu.add_command(label="Start", command=self.callback)
         filemenu.add_command(label="Pause", command=self.callback)
         filemenu.add_command(label="Stop", command=self.callback)
@@ -45,7 +47,6 @@ class MenuBar(tk.Menu):
                 found_port = True
                 filemenu.add_command(label=port, command=self.callback)
 
-        filemenu.add_separator()
         filemenu.add_command(label="Disconnect", command=self.callback)
 
         if not found_port:
@@ -79,15 +80,14 @@ class StatusBar(ttk.Frame):
 
 def plot_altitude(location):
 
-    f = Figure(figsize=(4, 4), dpi = (frame.winfo_width() - 50) / 16, facecolor = "white")
+    f = Figure(figsize=(4, 4), dpi = (frame.winfo_width() - 50) / 16)
     dataPlot = FigureCanvasTkAgg(f, master = location)
-    data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    data = [1, 2, 7, 1, 5, 4, 13, 8, 4, 10]
 
     a = f.add_subplot(111)
     a.plot(data)
 
-    a.set_title("Random Data")
-    f.set_frameon(False)
+    a.set_title("Altitude (m)")
     dataPlot.show()
     dataPlot.get_tk_widget().pack()
 
@@ -105,13 +105,80 @@ def plot_altitude(location):
         time.sleep(1)
     '''
 
+def plot_temperature(location):
+
+    f = Figure(figsize=(4, 4), dpi = (frame.winfo_width() - 50) / 16)
+    dataPlot = FigureCanvasTkAgg(f, master = location)
+    x_axis = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    outside_temp = [25, 22, 25, 26, 25, 23, 23, 25, 25, 24]
+    inside_temp = [27, 28, 27, 25, 25, 26, 27, 28, 24, 30]
+
+    a = f.add_subplot(111)
+    a.plot(x_axis, outside_temp, "r", label = "Outside")
+    a.plot(x_axis, inside_temp, "b", label = "Inside")
+
+    a.set_title("Temperature (C)")
+    a.set_ylim([-40, 40])
+    legend = a.legend(loc='lower right', shadow=True)
+
+    dataPlot.show()
+    dataPlot.get_tk_widget().pack()
+
+def plot_voltage(location):
+
+    f = Figure(figsize=(4, 4), dpi = (frame.winfo_width() - 50) / 16)
+    dataPlot = FigureCanvasTkAgg(f, master = location)
+    voltage = 6.5
+
+    a = f.add_subplot(111)
+
+    if voltage > 7.5:
+        a.bar(0, voltage, 1, color = 'g')
+    elif voltage > 5.5:
+        a.bar(0, voltage, 1, color = 'y')
+    else:
+        a.bar(0, voltage, 1, color = 'r')
+
+    a.set_title("Voltage (V)")
+    a.set_ylim([0, 10])
+    a.get_xaxis().set_visible(False)
+
+    dataPlot.show()
+    dataPlot.get_tk_widget().pack()    
+
+def plot_acc(location):
+
+    f = Figure(figsize=(4, 4), dpi = (frame.winfo_width() - 50) / 16)
+    dataPlot = FigureCanvasTkAgg(f, master = location)
+    acc_x = 250
+    acc_y = -187
+    acc_z = -360
+
+    a = f.add_subplot(111)
+
+    a.bar(0, acc_x, 1, color = 'g')
+    a.bar(1, acc_y, 1, color = 'b')
+    a.bar(2, acc_z, 1, color = 'r')
+
+    a.set_title("Acceleration (x, y, z)")
+    a.set_ylim([-500, 500])
+    a.get_xaxis().set_visible(False)
+
+    dataPlot.show()
+    dataPlot.get_tk_widget().pack()   
+
 def conclude():
     frame.focus_set()
+
+
+### Setting up the layout ###
 
 root.config(menu=MenuBar(root))
 root.geometry("1000x600+200+50")
 root.title("RSX CanSat Control Center Version 1.0")
 #root.configure(background='white')
+
+# Top info bar (team, time, flight status)
 
 top_info_frame = Frame(root)
 top_info_frame.pack(side = "top", pady = 20, fill = X)
@@ -123,13 +190,12 @@ label_top2.pack(side=LEFT, expand = 1, fill = X)
 label_top2 = Label(top_info_frame, text = "Flight Status: Ascending")
 label_top2.pack(side=LEFT, expand = 1, fill = X)
 
+# Main chart area
+
 frame = Frame(root, padx = 10, pady = 10)
 frame.pack(side='top', fill='both', expand='True')
 frame.bind("<Key>", key)
 frame.focus_set()
-
-root.status = StatusBar(root)
-root.status.pack(side='bottom', fill='x')
 
 chart_width = (frame.winfo_width() - 40) / 4
 chart_height = frame.winfo_height() / 2
@@ -143,10 +209,17 @@ chart3_frame.grid(column = 2, row = 0)
 chart4_frame = Frame(frame, bg = "white", width = chart_width, height = chart_height)
 chart4_frame.grid(column = 3, row = 0)
 
+# Bottom status bar
+
+root.status = StatusBar(root)
+root.status.pack(side='bottom', fill='x')
+
+# Code to run after mainloop
+
 root.after(0, plot_altitude(chart1_frame))
-root.after(0, plot_altitude(chart2_frame))
-root.after(0, plot_altitude(chart3_frame))
-root.after(0, plot_altitude(chart4_frame))
+root.after(0, plot_temperature(chart2_frame))
+root.after(0, plot_voltage(chart3_frame))
+root.after(0, plot_acc(chart4_frame))
 
 root.after(1000, conclude)
 
