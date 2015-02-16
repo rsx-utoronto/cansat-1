@@ -13,7 +13,7 @@ pip install matplotlib
 
 import Tkinter as tk
 from Tkinter import *
-import ttk, user, sys, time, serial
+import ttk, user, sys, time, serial, datetime
 from subprocess import check_output
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
@@ -77,12 +77,21 @@ class StatusBar(ttk.Frame):
         self.label.config(text="")
         self.label.update_idletasks()
 
-def test():
+def plot_altitude(location):
 
-    f = Figure(figsize=(3,3), facecolor = "white")
-    dataPlot = FigureCanvasTkAgg(f, master = chart1_frame)
-    data = [1]
+    f = Figure(figsize=(4, 4), dpi = (frame.winfo_width() - 50) / 16, facecolor = "white")
+    dataPlot = FigureCanvasTkAgg(f, master = location)
+    data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
+    a = f.add_subplot(111)
+    a.plot(data)
+
+    a.set_title("Random Data")
+    f.set_frameon(False)
+    dataPlot.show()
+    dataPlot.get_tk_widget().pack()
+
+    '''
     for i in range(0, 5):
         f.clf()
         a = f.add_subplot(111)
@@ -94,16 +103,27 @@ def test():
         dataPlot.get_tk_widget().pack()
 
         time.sleep(1)
+    '''
+
+def conclude():
+    frame.focus_set()
 
 root.config(menu=MenuBar(root))
 root.geometry("1000x600+200+50")
 root.title("RSX CanSat Control Center Version 1.0")
-root.configure(background='white')
+#root.configure(background='white')
 
-label_top = Label(root, text = "Hello world!", bg = "white")
-label_top.pack(side = "top", pady = 20)
+top_info_frame = Frame(root)
+top_info_frame.pack(side = "top", pady = 20, fill = X)
 
-frame = Frame(root, bg = "white", padx = 10, pady = 10)
+label_top1 = Label(top_info_frame, text = "TEAM #1171")
+label_top1.pack(side=LEFT, expand = 1, fill = X)
+label_top2 = Label(top_info_frame, text = "Mission Time: %s" % str(datetime.datetime.now()))
+label_top2.pack(side=LEFT, expand = 1, fill = X)
+label_top2 = Label(top_info_frame, text = "Flight Status: Ascending")
+label_top2.pack(side=LEFT, expand = 1, fill = X)
+
+frame = Frame(root, padx = 10, pady = 10)
 frame.pack(side='top', fill='both', expand='True')
 frame.bind("<Key>", key)
 frame.focus_set()
@@ -111,7 +131,7 @@ frame.focus_set()
 root.status = StatusBar(root)
 root.status.pack(side='bottom', fill='x')
 
-chart_width = frame.winfo_width() / 4
+chart_width = (frame.winfo_width() - 40) / 4
 chart_height = frame.winfo_height() / 2
 
 chart1_frame = Frame(frame, bg = "white", width = chart_width, height = chart_height)
@@ -123,5 +143,11 @@ chart3_frame.grid(column = 2, row = 0)
 chart4_frame = Frame(frame, bg = "white", width = chart_width, height = chart_height)
 chart4_frame.grid(column = 3, row = 0)
 
-root.after(0, test)
+root.after(0, plot_altitude(chart1_frame))
+root.after(0, plot_altitude(chart2_frame))
+root.after(0, plot_altitude(chart3_frame))
+root.after(0, plot_altitude(chart4_frame))
+
+root.after(1000, conclude)
+
 root.mainloop()
