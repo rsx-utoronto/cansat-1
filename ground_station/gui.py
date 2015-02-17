@@ -193,7 +193,7 @@ label_top2.pack(side=LEFT, expand = 1, fill = X)
 # Main chart area
 
 frame = Frame(root, padx = 10, pady = 10)
-frame.pack(side='top', fill='both', expand='True')
+frame.pack(side='top', fill='both')
 frame.bind("<Key>", key)
 frame.focus_set()
 
@@ -208,6 +208,22 @@ chart3_frame = Frame(frame, bg = "white", width = chart_width, height = chart_he
 chart3_frame.grid(column = 2, row = 0)
 chart4_frame = Frame(frame, bg = "white", width = chart_width, height = chart_height)
 chart4_frame.grid(column = 3, row = 0)
+
+# Top info bar (team, time, flight status)
+
+stream_frame = Frame(root, bg = "white")
+stream_frame.pack(side = "top", pady = 0, fill = BOTH, expand = True)
+
+scrollbar = Scrollbar(stream_frame)
+scrollbar.pack(side = RIGHT, fill = Y)
+
+listbox = Listbox(stream_frame, width = 600, yscrollcommand=scrollbar.set)
+f = open('../sample_data_file.csv', 'r')
+for line in f:
+    listbox.insert(0, str(line))
+listbox.pack(side = LEFT, fill = BOTH)
+
+scrollbar.config(command=listbox.yview)
 
 # Bottom status bar
 
