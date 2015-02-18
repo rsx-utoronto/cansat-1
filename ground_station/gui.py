@@ -71,9 +71,11 @@ class MenuBar(tk.Menu):
 
     def open_ser(self, port_name = None):
         global ser, ser_connected
-        
+
+        print port_name
+
         try:
-            ser = Serial("/dev/%s" % port_name, baud_rate, timeout = 0, writeTimeout = 0)
+            ser = Serial("/dev/ttyUSB0", baud_rate, timeout = 0, writeTimeout = 0)
             root.status.set("Connected to %s" % port_name)
             ser_connected = True
 
@@ -189,8 +191,7 @@ def ser_test_write():
     global ser, ser_connected
 
     if ser_connected:
-        ser.write("testing")
-        print "testing"
+        listbox.insert(0, ser.readline())
 
     root.after(1000, ser_test_write)
 
@@ -245,9 +246,12 @@ scrollbar = Scrollbar(stream_frame)
 scrollbar.pack(side = RIGHT, fill = Y)
 
 listbox = Listbox(stream_frame, width = 600, yscrollcommand=scrollbar.set)
+'''
 f = open('../sample_data_file.csv', 'r')
 for line in f:
     listbox.insert(0, str(line))
+'''
+
 listbox.pack(side = LEFT, fill = BOTH)
 
 scrollbar.config(command=listbox.yview)
