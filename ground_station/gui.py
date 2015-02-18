@@ -13,13 +13,18 @@ pip install matplotlib
 
 import Tkinter as tk
 from Tkinter import *
-import ttk, user, sys, time, serial, datetime, thread
+from serial import *
+import ttk, user, sys, time, datetime, thread
 from subprocess import check_output
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 
 root = tk.Tk()
+
+ser = None
+baud_rate = 57600
+ser_connected = False
 
 def key(event):
     root.status.set(repr(event.char)) 
@@ -28,39 +33,52 @@ class MenuBar(tk.Menu):
     def __init__(self, parent):
         tk.Menu.__init__(self, parent)
 
-        filemenu = tk.Menu(self, tearoff=False)
-        self.add_cascade(label="File",underline=0, menu=filemenu)
-        filemenu.add_command(label="Save Data (.csv)", command=self.callback)
+        filemenu = tk.Menu(self, tearoff = False)
+        self.add_cascade(label="File",underline = 0, menu = filemenu)
+        filemenu.add_command(label = "Save Data (.csv)", command=self.callback)
         filemenu.add_separator()
-        filemenu.add_command(label="Start", command=self.callback)
-        filemenu.add_command(label="Pause", command=self.callback)
-        filemenu.add_command(label="Stop", command=self.callback)
+        filemenu.add_command(label = "Start", command = self.callback)
+        filemenu.add_command(label = "Pause", command = self.callback)
+        filemenu.add_command(label = "Stop", command = self.callback)
         filemenu.add_separator()                
-        filemenu.add_command(label="Exit", underline=1, command=self.quit)
+        filemenu.add_command(label = "Exit", underline = 1, command = self.quit)
 
-        filemenu = tk.Menu(self, tearoff=False)
-        self.add_cascade(label="Establish Connection",underline=0, menu=filemenu)
+        filemenu = tk.Menu(self, tearoff = False)
+        self.add_cascade(label = "Establish Connection", underline = 0, menu = filemenu)
 
         found_port = False
         for port in check_output(["ls", "/dev"]).split("\n"):
             if port.find("USB") != -1:
                 found_port = True
-                filemenu.add_command(label=port, command=self.callback)
+                port_str = str(port)
+                filemenu.add_command(label = port, command = lambda: self.open_ser(port_name = port_str))
 
-        filemenu.add_command(label="Disconnect", command=self.callback)
+        filemenu.add_command(label = "Disconnect", command = self.callback)
 
         if not found_port:
-            filemenu.add_command(label="No COM Device Found")
+            filemenu.add_command(label = "No COM Device Found")
 
-        helpmenu = tk.Menu(self, tearoff=False)
-        self.add_cascade(label="Help", menu=helpmenu)
-        helpmenu.add_command(label="About", command=self.callback)
+        helpmenu = tk.Menu(self, tearoff = False)
+        self.add_cascade(label = "Help", menu = helpmenu)
+        helpmenu.add_command(label = "About", command = self.callback)
 
     def quit(self):
         sys.exit(0)
     
-    def callback(self):
+    def callback(self, text = "foo"):
         print "called the callback!"
+        print text
+
+    def open_ser(self, port_name = None):
+        global ser, ser_connected
+        
+        try:
+            ser = Serial("/dev/%s" % port_name, baud_rate, timeout = 0, writeTimeout = 0)
+            root.status.set("Connected to %s" % port_name)
+            ser_connected = True
+
+        except Exception as e:
+            root.status.set("Error: Connection could not be established. %s" % e)
 
 class StatusBar(ttk.Frame):
 
@@ -167,6 +185,15 @@ def plot_acc(location):
     dataPlot.show()
     dataPlot.get_tk_widget().pack()   
 
+def ser_test_write():
+    global ser, ser_connected
+
+    if ser_connected:
+        ser.write("testing")
+        print "testing"
+
+    root.after(1000, ser_test_write)
+
 def conclude():
     frame.focus_set()
 
@@ -237,6 +264,7 @@ root.after(0, plot_temperature(chart2_frame))
 root.after(0, plot_voltage(chart3_frame))
 root.after(0, plot_acc(chart4_frame))
 
+root.after(1000, ser_test_write)
 root.after(1000, conclude)
 
 root.mainloop()
