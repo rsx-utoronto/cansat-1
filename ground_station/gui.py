@@ -26,6 +26,15 @@ ser = None
 baud_rate = 57600
 ser_connected = False
 
+data_altitude = [0]
+data_temp_outside = [0.0]
+data_temp_inside = [0.0]
+data_voltage = [0.0]
+data_state = []
+data_acc_x = [0.0]
+data_acc_y = [0.0]
+data_acc_z = [0.0]  
+
 def key(event):
     root.status.set(repr(event.char)) 
 
@@ -98,102 +107,147 @@ class StatusBar(ttk.Frame):
         self.label.config(text="")
         self.label.update_idletasks()
 
-def plot_altitude(location):
+def plot_altitude():
 
-    f = Figure(figsize=(4, 4), dpi = (frame.winfo_width() - 50) / 16)
-    dataPlot = FigureCanvasTkAgg(f, master = location)
-    data = [1, 2, 7, 1, 5, 4, 13, 8, 4, 10]
+    global fig_altitude, dataPlot_altitude, a_altitude
 
-    a = f.add_subplot(111)
-    a.plot(data)
+    fig_altitude = Figure(figsize=(4, 4), dpi = (frame.winfo_width() - 50) / 16)
+    dataPlot_altitude = FigureCanvasTkAgg(fig_altitude, master = chart1_frame)
+    a_altitude = fig_altitude.add_subplot(111)
 
-    a.set_title("Altitude (m)")
-    dataPlot.show()
-    dataPlot.get_tk_widget().pack()
+    dataPlot_altitude.show()
+    dataPlot_altitude.get_tk_widget().pack()
 
-    '''
-    for i in range(0, 5):
-        f.clf()
-        a = f.add_subplot(111)
-        data.append(i)
-        a.plot(data)
+    def plot_cts():
+        global a_altitude
+        x_axis = range(0, len(data_altitude))
 
-        a.set_title("sfw")
-        dataPlot.show()
-        dataPlot.get_tk_widget().pack()
+        a_altitude.clear()
+        a_altitude.plot(x_axis, data_altitude)
 
-        time.sleep(1)
-    '''
+        a_altitude.set_title("Altitude (m)")
 
-def plot_temperature(location):
+        dataPlot_altitude.show()
+        dataPlot_altitude.get_tk_widget().pack()
 
-    f = Figure(figsize=(4, 4), dpi = (frame.winfo_width() - 50) / 16)
-    dataPlot = FigureCanvasTkAgg(f, master = location)
-    x_axis = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-    outside_temp = [25, 22, 25, 26, 25, 23, 23, 25, 25, 24]
-    inside_temp = [27, 28, 27, 25, 25, 26, 27, 28, 24, 30]
+        root.after(1000, plot_cts)
 
-    a = f.add_subplot(111)
-    a.plot(x_axis, outside_temp, "r", label = "Outside")
-    a.plot(x_axis, inside_temp, "b", label = "Inside")
+    plot_cts()
 
-    a.set_title("Temperature (C)")
-    a.set_ylim([-40, 40])
-    legend = a.legend(loc='lower right', shadow=True)
+def plot_temperature():
 
-    dataPlot.show()
-    dataPlot.get_tk_widget().pack()
+    global fig_temp, dataPlot_temp, a_temp
 
-def plot_voltage(location):
+    fig_temp = Figure(figsize=(4, 4), dpi = (frame.winfo_width() - 50) / 16)
+    dataPlot_temp = FigureCanvasTkAgg(fig_temp, master = chart2_frame)
+    a_temp = fig_temp.add_subplot(111)
 
-    f = Figure(figsize=(4, 4), dpi = (frame.winfo_width() - 50) / 16)
-    dataPlot = FigureCanvasTkAgg(f, master = location)
-    voltage = 6.5
+    dataPlot_temp.show()
+    dataPlot_temp.get_tk_widget().pack()
 
-    a = f.add_subplot(111)
+    def plot_cts():
+        global a_temp
+        x_axis = range(0, len(data_temp_outside))
 
-    if voltage > 7.5:
-        a.bar(0, voltage, 1, color = 'g')
-    elif voltage > 5.5:
-        a.bar(0, voltage, 1, color = 'y')
-    else:
-        a.bar(0, voltage, 1, color = 'r')
+        a_temp.clear()
+        a_temp.plot(x_axis, data_temp_outside, "r", label = "Outside")
+        a_temp.plot(x_axis, data_temp_inside, "b", label = "Inside")
 
-    a.set_title("Voltage (V)")
-    a.set_ylim([0, 10])
-    a.get_xaxis().set_visible(False)
+        a_temp.set_title("Temperature (C)")
+        a_temp.set_ylim([-40, 40])
+        legend = a_temp.legend(loc='lower right', shadow=True)        
 
-    dataPlot.show()
-    dataPlot.get_tk_widget().pack()    
+        dataPlot_temp.show()
+        dataPlot_temp.get_tk_widget().pack() 
 
-def plot_acc(location):
+        root.after(1000, plot_cts)
 
-    f = Figure(figsize=(4, 4), dpi = (frame.winfo_width() - 50) / 16)
-    dataPlot = FigureCanvasTkAgg(f, master = location)
-    acc_x = 250
-    acc_y = -187
-    acc_z = -360
+    plot_cts()    
 
-    a = f.add_subplot(111)
+def plot_voltage():
 
-    a.bar(0, acc_x, 1, color = 'g')
-    a.bar(1, acc_y, 1, color = 'b')
-    a.bar(2, acc_z, 1, color = 'r')
+    global fig_voltage, dataPlot_voltage, a_voltage
 
-    a.set_title("Acceleration (x, y, z)")
-    a.set_ylim([-500, 500])
-    a.get_xaxis().set_visible(False)
+    fig_voltage = Figure(figsize=(4, 4), dpi = (frame.winfo_width() - 50) / 16)
+    dataPlot_voltage = FigureCanvasTkAgg(fig_voltage, master = chart3_frame)
 
-    dataPlot.show()
-    dataPlot.get_tk_widget().pack()   
+    a_voltage = fig_voltage.add_subplot(111)
+    dataPlot_voltage.show()
+    dataPlot_voltage.get_tk_widget().pack()    
+
+    def plot_cts():
+        global a_voltage
+        a_voltage.clear()
+
+        voltage = data_voltage[len(data_voltage) - 1]
+        if voltage > 7.5:
+            a_voltage.bar(0, voltage, 1, color = 'g')
+        elif voltage > 5.5:
+            a_voltage.bar(0, voltage, 1, color = 'y')
+        else:
+            a_voltage.bar(0, voltage, 1, color = 'r')
+
+        a_voltage.set_title("Voltage (V)")
+        a_voltage.set_ylim([0, 10])
+        a_voltage.get_xaxis().set_visible(False)            
+
+        dataPlot_voltage.show()
+        dataPlot_voltage.get_tk_widget().pack() 
+
+        root.after(1000, plot_cts)
+
+    plot_cts()    
+
+def plot_acc():
+
+    global fig_acc, dataPlot_acc, a_acc
+
+    fig_acc = Figure(figsize=(4, 4), dpi = (frame.winfo_width() - 50) / 16)
+    dataPlot_acc = FigureCanvasTkAgg(fig_acc, master = chart4_frame)
+
+    a_acc = fig_acc.add_subplot(111)
+    dataPlot_acc.show()
+    dataPlot_acc.get_tk_widget().pack()   
+
+    def plot_cts():
+        global a_acc
+        a_acc.clear()
+
+        a_acc.set_title("Acceleration (x, y, z)")
+        a_acc.set_ylim([-500, 500])
+        a_acc.get_xaxis().set_visible(False)
+
+        a_acc.bar(0, data_acc_x[len(data_acc_x) - 1], 1, color = 'g')
+        a_acc.bar(1, data_acc_y[len(data_acc_y) - 1], 1, color = 'b')
+        a_acc.bar(2, data_acc_z[len(data_acc_z) - 1], 1, color = 'r')
+
+        dataPlot_acc.show()
+        dataPlot_acc.get_tk_widget().pack()   
+
+        root.after(1000, plot_cts)
+
+    plot_cts()     
 
 def ser_test_write():
     global ser, ser_connected
 
     if ser_connected:
-        listbox.insert(0, ser.readline())
+        data = ser.readline()
+        data_list = data.split(",")
 
-    root.after(1000, ser_test_write)
+        if len(data_list) == 10:
+            data_altitude.append(int(data_list[2]))
+            data_temp_outside.append(float(data_list[3]))
+            data_temp_inside.append(float(data_list[4]))
+            data_voltage.append(float(data_list[5]))
+            data_state.append(data_list[6])
+            data_acc_x.append(float(data_list[7]))
+            data_acc_y.append(float(data_list[8]))
+            data_acc_z.append(float(data_list[9]))
+
+            listbox.insert(0, data)
+
+    root.after(500, ser_test_write)
 
 def conclude():
     frame.focus_set()
@@ -246,6 +300,7 @@ scrollbar = Scrollbar(stream_frame)
 scrollbar.pack(side = RIGHT, fill = Y)
 
 listbox = Listbox(stream_frame, width = 600, yscrollcommand=scrollbar.set)
+
 '''
 f = open('../sample_data_file.csv', 'r')
 for line in f:
@@ -263,10 +318,10 @@ root.status.pack(side='bottom', fill='x')
 
 # Code to run after mainloop
 
-root.after(0, plot_altitude(chart1_frame))
-root.after(0, plot_temperature(chart2_frame))
-root.after(0, plot_voltage(chart3_frame))
-root.after(0, plot_acc(chart4_frame))
+root.after(0, plot_altitude)
+root.after(0, plot_temperature)
+root.after(0, plot_voltage)
+root.after(0, plot_acc)
 
 root.after(1000, ser_test_write)
 root.after(1000, conclude)
