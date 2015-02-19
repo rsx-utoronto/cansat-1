@@ -1,0 +1,32 @@
+---------------------------------------------------------------------
+For ADC:
+ADC device is MPC3008. It uses SPI interface to communicate with
+the rapsberry pi. I followed the following two websites to set up
+the ADC with the hardware (not bit-banged) SPI on the pi:
+
+For setting up the wired connections to the ADC:
+http://hertaville.com/2013/07/24/interfacing-an-spi-adc-mcp3008-chip-to-the-raspberry-pi-using-c/
+For installing python spidev package and the basic python script:
+https://www.modmypi.com/8-channel-10-bit-analog-to-digital-converter
+
+There are a few things you need to do to configure the pi to use
+hardware SPI which are mentioned on the above two websites. These
+things are preventing the pi from blacklisting spi, and also just
+installing python spi libraries.
+
+The adc.py is the script from the second website which simply reads
+all of the ADC channels. In the sensor_functions.py I added a 
+readvoltage function which reads only the adc value from channel 0.
+This basically assumes that the voltage sensor is attached to 
+channel 0 and that the reference voltage is set to 3.3 V. If you
+set the ref voltage to 5 V you just need to change the multiplicative
+factor in the equation to calculate the actual voltage value from the
+adc value read. The value of 5 comes from the fact that the sensor
+divides the actual voltage by 5 so that is below the ref voltage.
+
+If you want to add analog devices to be read from the adc, just create
+a similar function to the readvoltage function and do the appropriate
+conversion of adc value to actual value.
+
+- Jeff
+-------------------------------------------------------------------- 
