@@ -1,5 +1,6 @@
 ---------------------------------------------------------------------
 For ADC:
+
 ADC device is MPC3008. It uses SPI interface to communicate with
 the rapsberry pi. I followed the following two websites to set up
 the ADC with the hardware (not bit-banged) SPI on the pi:
