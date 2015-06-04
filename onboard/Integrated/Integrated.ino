@@ -103,7 +103,7 @@ void setup() {
   #endif
 
   // initialize serial communication
-  Serial.begin(115200);
+  Serial.begin(9600);
   while (!Serial); // wait for Leonardo enumeration, others continue immediately
 
   // initialize device
