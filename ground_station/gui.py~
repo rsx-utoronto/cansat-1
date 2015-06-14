@@ -89,7 +89,7 @@ class MenuBar(tk.Menu):
         print port_name
 
         try:
-            ser = Serial("/dev/ttyUSB5", baud_rate, timeout = 0, writeTimeout = 0)
+            ser = Serial("/dev/ttyUSB6", baud_rate, timeout = 0, writeTimeout = 0)
             # ser.flush()
             root.status.set("Connected to %s" % port_name)
             ser_connected = True
