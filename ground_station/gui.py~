@@ -23,7 +23,7 @@ from matplotlib.figure import Figure
 root = tk.Tk()
 
 ser = None
-baud_rate = 9600
+baud_rate = 57600
 ser_connected = False
 
 data_altitude = [0]
@@ -84,7 +84,7 @@ class MenuBar(tk.Menu):
         print port_name
 
         try:
-            ser = Serial("/dev/ttyUSB1", baud_rate, timeout = 0, writeTimeout = 0)
+            ser = Serial("/dev/ttyUSB0", baud_rate, timeout = 0, writeTimeout = 0)
             root.status.set("Connected to %s" % port_name)
             ser_connected = True
 

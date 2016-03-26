@@ -212,14 +212,13 @@ def plot_acc():
     def plot_cts():
         global a_acc
         a_acc.clear()
+	x_axis = range(0, len(data_acc_x))
 
-        a_acc.set_title("Acceleration (x, y, z)")
-        a_acc.set_ylim([-500, 500])
+        a_acc.set_title("Airspeed")
+        a_acc.set_ylim([0, 100])
         a_acc.get_xaxis().set_visible(False)
 
-        a_acc.bar(0, data_acc_x[len(data_acc_x) - 1], 1, color = 'g')
-        a_acc.bar(1, data_acc_y[len(data_acc_y) - 1], 1, color = 'b')
-        a_acc.bar(2, data_acc_z[len(data_acc_z) - 1], 1, color = 'r')
+	a_acc.plot(x_axis, data_acc_x)
 
         dataPlot_acc.show()
         dataPlot_acc.get_tk_widget().pack()   
@@ -265,7 +264,7 @@ root.title("RSX CanSat Control Center Version 1.0")
 top_info_frame = Frame(root)
 top_info_frame.pack(side = "top", pady = 20, fill = X)
 
-label_top1 = Label(top_info_frame, text = "TEAM #1171")
+label_top1 = Label(top_info_frame, text = "TEAM #6734")
 label_top1.pack(side=LEFT, expand = 1, fill = X)
 label_top2 = Label(top_info_frame, text = "Mission Time: %s" % str(datetime.datetime.now()))
 label_top2.pack(side=LEFT, expand = 1, fill = X)

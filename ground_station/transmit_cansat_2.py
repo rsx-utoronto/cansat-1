@@ -12,14 +12,14 @@ ser = Serial(serialPort , baudRate, timeout=0, writeTimeout=0)
 
 while True:
 
-	team_id = "1171"
+	team_id = "6734"
 	date_time = datetime.datetime.now()
 	altitude = randint(0, 1000)
 	temp_outside = randint(22, 32)
 	temp_inside = randint(22, 32)
-	voltage = randint(2, 10)
+	voltage = randint(7, 10)
 	state = "ASCENT"
-	acc_x = randint(-500, 500)
+	acc_x = randint(25, 45) # actually airspeed lol
 	acc_y = randint(-500, 500)
 	acc_z = randint(-500, 500)		
 
