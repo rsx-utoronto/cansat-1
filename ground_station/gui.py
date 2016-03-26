@@ -67,6 +67,11 @@ class MenuBar(tk.Menu):
         if not found_port:
             filemenu.add_command(label = "No COM Device Found")
 
+        commandmenu = tk.Menu(self, tearoff = False)
+        self.add_cascade(label = "Flight Commands", underline = 0, menu = commandmenu)
+        commandmenu.add_command(label = "Lock CanSat", command = lambda: self.command_fire(command = "l"))
+        commandmenu.add_command(label = "Release CanSat", command = lambda: self.command_fire(command = "r"))
+
         helpmenu = tk.Menu(self, tearoff = False)
         self.add_cascade(label = "Help", menu = helpmenu)
         helpmenu.add_command(label = "About", command = self.callback)
@@ -75,7 +80,7 @@ class MenuBar(tk.Menu):
         sys.exit(0)
     
     def callback(self, text = "foo"):
-        print "called the callback!"
+        print "What you saying? "
         print text
 
     def open_ser(self, port_name = None):
@@ -85,11 +90,16 @@ class MenuBar(tk.Menu):
 
         try:
             ser = Serial("/dev/ttyUSB1", baud_rate, timeout = 0, writeTimeout = 0)
+            # ser.flush()
             root.status.set("Connected to %s" % port_name)
             ser_connected = True
 
         except Exception as e:
             root.status.set("Error: Connection could not be established. %s" % e)
+
+    def command_fire(self, command = None):
+        global ser, ser_connected
+        ser.write(command)
 
 class StatusBar(ttk.Frame):
 
@@ -236,7 +246,7 @@ def ser_test_write():
         data_list = data.split(",")
 
         if len(data_list) == 10:
-            data_altitude.append(int(data_list[2]))
+            data_altitude.append(int(data_list[2]) - 540)
             data_temp_outside.append(float(data_list[3]))
             data_temp_inside.append(float(data_list[4]))
             data_voltage.append(float(data_list[5]))
@@ -248,6 +258,33 @@ def ser_test_write():
             listbox.insert(0, data)
 
     root.after(500, ser_test_write)
+
+def ser_test():
+	global ser, ser_connected
+
+	if ser_connected:
+		data = ser.readline()
+		data_list = data.split(",")
+
+		print data_list
+
+		if len(data_list) == 13:
+			listbox.insert(0, data)
+
+			data_altitude.append(float(data_list[2]) - 500)
+			data_temp_outside.append(float(data_list[3]))
+			data_temp_inside.append(float(data_list[4]) / 10)
+			data_voltage.append(float(data_list[5]))
+			data_state.append(data_list[6])
+			data_acc_x.append(float(data_list[7]))
+			data_acc_y.append(float(data_list[8]))
+			data_acc_z.append(float(data_list[9]))
+
+			f = open("CANSAT2015_TLM_1171.csv", "a")
+			f.write(data)
+			f.close()
+
+	root.after(1000, ser_test)
 
 def conclude():
     frame.focus_set()
@@ -323,7 +360,7 @@ root.after(0, plot_temperature)
 root.after(0, plot_voltage)
 root.after(0, plot_acc)
 
-root.after(1000, ser_test_write)
+root.after(1000, ser_test)
 root.after(1000, conclude)
 
 root.mainloop()
